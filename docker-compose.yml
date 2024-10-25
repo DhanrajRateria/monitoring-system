@@ -11,6 +11,12 @@ services:
       - /home/dhanraj-rateria/Documents/monitoring-system/app/src:/app:rw
     networks:
       - monitoring-network
+    container_name: flask-app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     
   prometheus:
     image: prom/prometheus:v2.30.3
@@ -18,25 +24,36 @@ services:
       - "9090:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml
       - prometheus-data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
       - '--web.console.libraries=/usr/share/prometheus/console_libraries'
       - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
     networks:
       - monitoring-network
+    container_name: prometheus
+    depends_on:
+      - flask-app
 
   grafana:
     image: grafana/grafana:8.2.0
     ports:
       - "3000:3000"
     volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
       - grafana-data:/var/lib/grafana
     depends_on:
       - prometheus
     networks:
       - monitoring-network
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    container_name: grafana
 
 networks:
   monitoring-network:

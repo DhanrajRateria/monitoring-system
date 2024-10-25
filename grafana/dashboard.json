@@ -1,0 +1,79 @@
+{
+    "dashboard": {
+      "id": null,
+      "title": "Application Monitoring Dashboard",
+      "tags": ["python", "flask"],
+      "timezone": "browser",
+      "refresh": "5s",
+      "panels": [
+        {
+          "title": "Request Rate",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "rate(app_request_count_total[5m])",
+              "legendFormat": "{{endpoint}}"
+            }
+          ]
+        },
+        {
+          "title": "Response Time (95th Percentile)",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, rate(app_request_latency_seconds_bucket[5m]))",
+              "legendFormat": "{{endpoint}}"
+            }
+          ]
+        },
+        {
+          "title": "Error Rate",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "rate(app_error_count_total[5m])",
+              "legendFormat": "{{error_type}} - {{endpoint}}"
+            }
+          ]
+        },
+        {
+          "title": "CPU Usage",
+          "type": "gauge",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "app_cpu_usage_percent"
+            }
+          ],
+          "options": {
+            "maxValue": 100,
+            "minValue": 0
+          }
+        },
+        {
+          "title": "Memory Usage",
+          "type": "graph",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "app_memory_usage_bytes",
+              "legendFormat": "Memory Usage"
+            }
+          ]
+        },
+        {
+          "title": "Active Requests",
+          "type": "stat",
+          "datasource": "Prometheus",
+          "targets": [
+            {
+              "expr": "app_active_requests"
+            }
+          ]
+        }
+      ]
+    }
+  }
